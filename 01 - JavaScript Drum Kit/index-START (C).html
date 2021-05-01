@@ -56,28 +56,39 @@
     <audio data-key="76" src="sounds/tink.wav"></audio>
 
     <script>
+      // 因 HTML 結構不會改變，所以在全域捕捉一次元素即可
       const keys = document.querySelectorAll(".key");
       const sounds = document.querySelectorAll("audio");
 
+      /* 使用冒泡方式捕捉按下鍵盤的事件 */
       window.addEventListener("keydown", ({ keyCode }) => {
+        // 定義允許的按鍵，如果使用者輸入的按鍵不在陣列中則使用 return 之下程式碼不會被執行的特性中斷事件處理
         const validKeys = [65, 68, 70, 71, 72, 74, 75, 76, 83];
         if (!validKeys.includes(keyCode)) return;
+        // toString() 是為了在之後的相等性測試中使用嚴格相等 ===
         keyCode = keyCode.toString();
+        // 將不同的邏輯（播放聲音、按鍵動畫）拆分為函式
         playAudio(keyCode);
         onKeydown(keyCode);
       });
 
+      /* 播放聲音 */
       function playAudio(keyCode) {
+        // 根據 keyCode 尋找元素中對應的 data-key 值
+        // 使用 [...sounds] 的原因是將 querySelectorAll 轉為陣列以使用方法 find()，用 Array.from(sounds) 也可以達到同樣目的
         const sound = [...sounds].find(k => k.dataset.key === keyCode);
+        // 每次播放音效前都重置播放進度可以解決使用者連續按住鍵盤的問題
         sound.currentTime = 0;
         sound.play();
       }
 
+      /* 按鍵動畫 */
       function onKeydown(keyCode) {
         const key = [...keys].find(k => k.dataset.key === keyCode);
         key.classList.add("playing");
       }
 
+      /* 在載入網頁時透過 IIFE 對螢幕上的按鍵綁定「動畫結束」的函式，使其在動畫結束後會自動移除 .playing */
       (function onTransitionend() {
         keys.forEach(k => {
           k.addEventListener("transitionend", e => {
