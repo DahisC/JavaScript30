@@ -1,22 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Type Ahead 👀</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Type Ahead 👀</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <form class="search-form">
+      <input type="text" class="search" placeholder="City or State" />
+      <ul class="suggestions">
+        <li>Filter for a city</li>
+        <li>or a state</li>
+      </ul>
+    </form>
+    <script>
+      const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
 
-  <form class="search-form">
-    <input type="text" class="search" placeholder="City or State">
-    <ul class="suggestions">
-      <li>Filter for a city</li>
-      <li>or a state</li>
-    </ul>
-  </form>
-<script>
-const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+      const suggestions = document.querySelector('.suggestions');
+      let data = [];
 
-</script>
-</body>
+      document.querySelector('.search').addEventListener('input', function () {
+        if (data.length === 0) initData(this.value);
+        else search(this.value);
+      });
+
+      async function initData(query) {
+        const result = await fetch(endpoint, { method: 'GET' });
+        data = await result.json();
+        suggestions.innerHTML = '';
+        search(query);
+      }
+
+      function search(query) {
+        const q = new RegExp(query, 'i');
+        const queryHl = `<span class="hl">${query}</span>`;
+        const filteredData = data.filter((d) => d.city.match(q) || d.state.match(q));
+        const formattedData = filteredData
+          .map(
+            (d) => `
+            <li>
+              <span>${d.city.replace(q, queryHl)}, ${d.state.replace(q, queryHl)}</span>
+              <span class="population">${d.population.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
+            </li>
+          `
+          )
+          .reduce((a, c) => a + c, '');
+        suggestions.innerHTML = formattedData;
+      }
+    </script>
+  </body>
 </html>
