@@ -22,8 +22,27 @@ btn_play.onclick = () => {
 };
 
 // 點擊進度條時跳轉
-progress.addEventListener('click', function (event) {
+// progress.addEventListener('click', function (event) {
+//   video.currentTime = video.duration * (event.offsetX / this.offsetWidth);
+// });
+
+let isDragging = false;
+
+progress.addEventListener('click', function () {
   video.currentTime = video.duration * (event.offsetX / this.offsetWidth);
+});
+
+progress.addEventListener('mousedown', () => {
+  isDragging = true;
+});
+
+progress.addEventListener('mouseup', () => {
+  isDragging = false;
+});
+
+progress.addEventListener('mousemove', function (event) {
+  // video.currentTime = video.duration * (event.offsetX / this.offsetWidth);'
+  if (isDragging) video.currentTime = video.duration * (event.offsetX / this.offsetWidth);
 });
 
 // 前進/後退特定時間
